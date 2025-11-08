@@ -11,3 +11,5 @@ __pycache__/
 
 #ignore the following
 *.code-workspace
+listings.json
+secrets.json
