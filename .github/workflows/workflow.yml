@@ -7,6 +7,10 @@ on:
     paths:
       - 'aibnbclean/*'
 
+permissions:
+  id-token: write
+  contents: read #other permissions as needed
+
 jobs:
   publish:
     runs-on: ubuntu-latest
