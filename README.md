@@ -1,32 +1,30 @@
 # aibnbclean
 
-## setup
+the following is some basic code that helps automate cleaning scheduling and communication for short-term rental properties such as Airbnb listings
 
-on raspberry pi
+## production install on raspberry pi
 
 ```bash
+#install prequisite packages
 sudo apt install chromium-browser
 sudo apt install chromium-chromedriver
-```
 
-### python virtual environment
-
-```pwsh
-git clone <clone url>
-cd ./aibnbclean
+#install aibnbclean package
+mkdir -p ~/Documents/production/aibnbclean
+cd ~/Documents/production/aibnbclean
 python -m venv .venv
 . ./.venv/bin/activate
-which pip
-pip install -r requirements.txt
+pip install aibnbclean
+
+#setup config directory
+mkdir -p ~/Documents/production/aibnbclean_config
 ```
 
 ## listings.json example
 
-This project expects a JSON array of listing objects at `aibnbclean_config/listings.json` (example file included).
+create the following at ~/Documents/production/aibnbclean_config/listings.json
 
 Each object describes a property and the integration points (calendar, spreadsheet, Todoist project, etc.).
-
-Example template:
 
 ```json
 [
@@ -88,7 +86,7 @@ Field descriptions:
 
 ## secrets configuration
 
-This project expects a JSON object at `aibnbclean_config/secrets.json` (example file included). This file contains API keys and other sensitive information.
+create the following at aibnbclean_config/secrets.json
 
 ```json
 {
@@ -114,4 +112,13 @@ This project expects a JSON object at `aibnbclean_config/secrets.json` (example 
         "universe_domain": "googleapis.com"
     }
 }
+```
+
+## run daily using cron
+
+the following example runs at 1:30pm daily
+
+```cron
+30 13 * * * date > /tmp/aibnbclean.log
+30 13 * * * $HOME/Documents/production/aibnbclean/.venv/bin/python $HOME/Documents/production/run.py --config_dir $HOME/Documents/production/aibnbclean_config >> /tmp/aibnbclean.log 2>&1
 ```
