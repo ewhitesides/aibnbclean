@@ -1,5 +1,6 @@
 #ignore everything that starts with a dot, except
 .*
+!.github
 !.gitignore
 !.vscode
 
