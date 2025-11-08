@@ -120,6 +120,33 @@ create the following at aibnbclean_config/secrets.json
 }
 ```
 
+## define a run.py at ~/Documents/production/run.py
+
+```python
+import argparse
+import os
+import aibnbclean
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Run aibnbclean with specific config directory"
+    )
+
+    parser.add_argument(
+        "--config_dir",
+        type=str,
+        required=False,
+        default=os.path.dirname(os.path.abspath(__file__)),
+        help="Path to the configuration directory"
+    )
+
+    args = parser.parse_args()
+
+    aibnbclean.process(
+        config_dir=args.config_dir
+    )
+```
+
 ## run daily using cron
 
 the following example runs at 1:30pm daily
