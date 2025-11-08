@@ -2,6 +2,12 @@
 
 the following is some basic code that helps automate cleaning scheduling and communication for short-term rental properties such as Airbnb listings
 
+- it pulls booking data from airbnb calendars or google calendars
+- it uses google spreadsheets to track cleaning schedules and records
+- it uses google gemini api to parse airbnb user messages for additional info to store in the spreadsheet
+- it sends text message notifications to cleaners via twilio
+- it sends payment tasks to todoist
+
 ## production install on raspberry pi
 
 ```bash
