@@ -34,7 +34,7 @@ Example template:
     "name": "Example Listing Name",
     "type": "airbnb",
     "laundry": "yes",
-    "url": "https://example.com/calendar.ics", //link to airbnb ical
+    "url": "https://example.com/calendar.ics",
     "spreadsheet_id": "<GOOGLE_SHEET_ID>",
     "spreadsheet_sheet_name": "Sheet1",
     "spreadsheet_sheet_id": 0,
