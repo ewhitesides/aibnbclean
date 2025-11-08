@@ -73,7 +73,7 @@ Field descriptions:
 
 - `name` (string): Human-readable listing name used in logs and UI.
 - `type` (string): Listing type; typically `airbnb` or `home`.
-- `laundry` (string): `yes`/`no` to indicate if laundry (linen service) is available.
+- `laundry` (string): `yes`/`no` to indicate if cleaners should do laundry.
 - `url` (string): Calendar URL (iCal / .ics) or Google Calendar private feed used to fetch bookings.
 - `spreadsheet_id` (string): Google Sheets ID used for storing cleaning records and schedules.
 - `spreadsheet_sheet_name` (string): Name of the sheet/tab within the spreadsheet.
