@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "run.py",
+            "name": "aibnbclean_process.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/run.py",
+            "program": "${workspaceFolder}/aibnbclean_process.py",
             "console": "integratedTerminal"
         }
     ]

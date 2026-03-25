@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from typing import List
-
 import requests
 from icalendar import Calendar, Event
 from recurring_ical_events import of

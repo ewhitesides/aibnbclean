@@ -8,7 +8,27 @@ the following is some basic code that helps automate cleaning scheduling and com
 - it sends text message notifications to cleaners via twilio
 - it sends payment tasks to todoist
 
-## production install on raspberry pi
+## Developer setup
+
+### install python
+
+```pwsh
+winget install python
+winget install Chromium.ChromeDriver
+```
+
+### install uv package manager
+
+```pwsh
+pip install uv
+```
+
+### use uv to create a virtual environment
+
+```pwsh
+cd <code repo folder>
+uv sync
+```
 
 ```bash
 #install prequisite packages
@@ -97,7 +117,6 @@ create the following at aibnbclean_config/secrets.json
 ```json
 {
     "gemini_api_key": "api_key",
-    "airbnb_userpass": "user_email:password",
     "todoist_api_key": "api_key",
     "twilio": {
         "client": "clientid:clientsecret",
