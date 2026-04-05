@@ -1,3 +1,4 @@
+import os
 from .AirbnbBrowser import AirbnbBrowser
 from .CleaningRecord import CleaningRecord
 from .get_google_ss_credentials import get_google_ss_credentials
@@ -21,7 +22,8 @@ def process_ab_listing(listing: dict, secrets: dict) -> None:
         print(f"starting listing {listing['name']}")
 
         # login to airbnb
-        ab = AirbnbBrowser(headless=False)
+        headless = os.environ["AIBNBCLEAN_HEADLESS"] in ['1']
+        ab = AirbnbBrowser(headless=headless)
         logged_in = ab.is_logged_in()
         if not logged_in:
             raise Exception(
