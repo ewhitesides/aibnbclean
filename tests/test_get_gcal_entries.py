@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
-from get_json_file_data import get_json_file_data
-from get_gcal_entries import get_gcal_entries
+from aibnbclean.get_json_file_data import get_json_file_data
+from aibnbclean.get_gcal_entries import get_gcal_entries
 import unittest
 
 

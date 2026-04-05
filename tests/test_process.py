@@ -8,4 +8,5 @@ class TestProcess(unittest.TestCase):
         """
         test that process function runs without error
         """
+        print('here')
         process()

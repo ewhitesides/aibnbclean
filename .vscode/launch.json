@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "unittest",
             "args": [
-                "aibnbclean/test_process.py"
+                "tests/test_process.py"
             ],
             "console": "integratedTerminal"
         },
@@ -20,7 +20,7 @@
             "request": "launch",
             "module": "unittest",
             "args": [
-                "aibnbclean/test_login.py"
+                "tests/test_login.py"
             ],
             "console": "integratedTerminal"
         }
