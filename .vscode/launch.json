@@ -5,10 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "aibnbclean_process.py",
+            "name": "Python: unittest test_process.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/aibnbclean_process.py",
+            "module": "unittest",
+            "args": [
+                "aibnbclean/test_process.py"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: unittest test_login.py",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "args": [
+                "aibnbclean/test_login.py"
+            ],
             "console": "integratedTerminal"
         }
     ]

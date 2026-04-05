@@ -1,5 +1,5 @@
 import unittest
-from login import login
+from aibnbclean.login import login
 
 
 class TestLogin(unittest.TestCase):
