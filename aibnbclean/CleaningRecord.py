@@ -1,3 +1,4 @@
+import os
 import re
 import hashlib
 import random
@@ -473,7 +474,7 @@ class CleaningRecord:
             """
 
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model=os.environ['AIBNBCLEAN_GEMINI_MODEL'],
                 contents=contents,
                 config={
                     'response_mime_type': 'application/json',
