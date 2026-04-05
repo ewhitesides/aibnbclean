@@ -108,8 +108,7 @@ def process_home_listing(listing: Dict, secrets: Dict):
                     tw_client=tw_client,
                     tw_from_number=secrets['twilio']['from_number'],
                     tw_to_number=secrets['twilio']['to_number'],
-                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url'],
-                    checklist_bitly_url=listing['checklist_bitly_url']
+                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url']
                 )
                 cr.new_pay_reminder_task(
                     td_api=td_api,

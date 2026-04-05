@@ -63,7 +63,6 @@ Each object describes a property and the integration points (calendar, spreadshe
     "spreadsheet_sheet_name": "Sheet1",
     "spreadsheet_sheet_id": 0,
     "spreadsheet_bitly_url": "http://bit.ly/example",
-    "checklist_bitly_url": "",
     "default_cleaning_fee": 100,
     "qty_to_process": 10,
     "guests": { "min": 1, "max": 4 },
@@ -81,7 +80,6 @@ Each object describes a property and the integration points (calendar, spreadshe
     "spreadsheet_sheet_name": "Sheet1",
     "spreadsheet_sheet_id": 0,
     "spreadsheet_bitly_url": "http://bit.ly/secondexample",
-    "checklist_bitly_url": "",
     "qty_to_process": 5,
     "default_cleaning_fee": 80,
     "guests": {},
@@ -103,7 +101,6 @@ Field descriptions:
 - `spreadsheet_sheet_name` (string): Name of the sheet/tab within the spreadsheet.
 - `spreadsheet_sheet_id` (number): Numeric sheet/tab ID (0-based or Google sheet gid depending on usage).
 - `spreadsheet_bitly_url` (string): Short URL to the spreadsheet for displaying in text messages.
-- `checklist_bitly_url` (string): Short URL to the cleaning checklist for displaying in text messages.
 - `default_cleaning_fee` (number): Default fee to use when calculating charges for a clean. Otherwise is home type is airbnb, the fee is pulled from the booking data.
 - `qty_to_process` (number): How many upcoming bookings to process at a time.
 - `guests`, `beds`, `pnp_beds` (objects): Optional min/max counts used for filtering or validations. Provide `{}` or omit if not applicable.

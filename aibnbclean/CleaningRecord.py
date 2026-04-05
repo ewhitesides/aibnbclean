@@ -588,8 +588,7 @@ Cleaning Schedule (Old Version): https://bit.ly/4428USu
         tw_client: Client,
         tw_from_number: str,
         tw_to_number: str,
-        spreadsheet_bitly_url: str,
-        checklist_bitly_url: str
+        spreadsheet_bitly_url: str
     ):
 
         cleaning_date = self.cleaning_date.strftime("%m/%d/%Y")
@@ -621,9 +620,7 @@ Notification for {self.listing_name}
 Cleaning Date: {cleaning_date}
 Check In Date: {next_check_in_date}
 Guests: {next_guests_qty}, Beds: {next_beds_qty}
-Cleaning Checklist: {checklist_bitly_url}
-Cleaning Schedule (New Version): {spreadsheet_bitly_url}
-Cleaning Schedule (Old Version): https://bit.ly/4428USu
+Cleaning Schedule: {spreadsheet_bitly_url}
 """
 
             tw_client.messages.create(
