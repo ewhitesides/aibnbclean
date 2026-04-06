@@ -128,13 +128,15 @@ source .venv/bin/activate
 
 # install aibnbclean package into the venv
 uv pip install --refresh aibnbclean
-```
 
-### execute the login function once to create browser_profile that is logged into airbnb
+# install playwright
+playwright install --with-deps
 
-```pwsh
-cd ~/aibnbclean
-./.venv/python -c "import aibnbclean; aibnbclean.login()"
+# execute the login function once to create browser_profile with access to airbnb
+python -c "import aibnbclean; aibnbclean.login()"
+
+# once logged in you should be able to do a test run
+python -c "import aibnbclean; aibnbclean.process()"
 ```
 
 ## run daily using cron
@@ -143,5 +145,5 @@ the following example runs at 1:30pm daily
 
 ```cron
 30 13 * * * date > /tmp/aibnbclean.log
-30 13 * * * cd $HOME/aibnbclean; ./.venv/python -c "import aibnbclean; aibnbclean.process()" >> /tmp/aibnbclean.log 2>&1
+30 13 * * * cd $HOME/aibnbclean; source .venv/bin/activate; python -c "import aibnbclean; aibnbclean.process()" >> /tmp/aibnbclean.log 2>&1
 ```
