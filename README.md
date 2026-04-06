@@ -103,28 +103,32 @@ create listings.json in the config directory specified in the .env file
 }
 ```
 
-## Production setup
+## Production setup on raspberry pi with gui interface
 
-### initial install
+sudo adduser airbnb
 
-```pwsh
-# install python
-winget install python
-
-# install uv package manager
-pip install uv
-
-# create config directory, and cd to it
-mkdir ~/aibnbclean
-cd ~/aibnbclean
-
-# create the venv with the aibnbclean package
-uv pip install aibnbclean
-```
+sudo usermod -aG adm,dialout,cdrom,sudo,audio,video,render,plugdev,games,users,input,netdev,spi,i2c,gpio,lpadmin airbnb
 
 ### config
 
 define config directory, listings.json, secrets.json, .env file similar to developer setup above
+
+### initial install
+
+```bash
+# install uv package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# cd to config directory
+cd ~/aibnbclean
+
+# create and activate the venv
+uv venv
+source .venv/bin/activate
+
+# install aibnbclean package into the venv
+uv pip install --refresh aibnbclean
+```
 
 ### execute the login function once to create browser_profile that is logged into airbnb
 
