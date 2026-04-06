@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aibnbclean"
-version = "2.0.0.0"
+version = "2.1.0.0"
 description = "airbnb cleaning notification automation tool"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Erik Whitesides", email = "eklevjer@gmail.com" }]
 keywords = ["airbnb", "cleaning", "automation"]
