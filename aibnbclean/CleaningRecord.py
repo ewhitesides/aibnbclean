@@ -1,16 +1,15 @@
+import os
 import re
 import hashlib
+import random
 from unicodedata import normalize
 from io import StringIO
 from datetime import datetime, date, timedelta
 from typing import Optional, Dict, List
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from .GoogleAiResponse import GoogleAiResponse
 from google import genai
 from twilio.rest import Client
+from playwright.sync_api import Page
+from .GoogleAiResponse import GoogleAiResponse
 
 
 class CleaningRecord:
@@ -309,119 +308,86 @@ class CleaningRecord:
         self.next_car_license_state = next_cr.car_license_state
         self.next_phone_last_4_digits = next_cr.phone_last_4_digits
 
-    def _set_message_url(self, driver: webdriver.Chrome):
+    def set_message_url(self, page: Page):
         if self.reservation_url is None:
             raise ValueError("reservation_url is required")
 
-        if driver.current_url != self.reservation_url:
-            driver.get(self.reservation_url)
+        if page.url != self.reservation_url:
+            page.goto(self.reservation_url)
+        page.wait_for_timeout(random.randint(1000, 5000))
 
         pattern = r"/hosting/p/inbox/folder/all/thread/\d+"
-        match = re.search(pattern, driver.page_source)
+        match = re.search(pattern, page.content())
         if match:
             self.message_url = "https://www.airbnb.com" + match.group(0)
 
-    def _set_guest_name(self, driver: webdriver.Chrome):
+    def set_guest_name_qty(self, page: Page):
         if self.reservation_url is None:
             raise ValueError("reservation_url is required")
 
-        if driver.current_url != self.reservation_url:
-            driver.get(self.reservation_url)
+        if page.url != self.reservation_url:
+            page.goto(self.reservation_url)
+        page.wait_for_timeout(random.randint(1000, 5000))
 
-        section = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (
-                    By.CSS_SELECTOR,
-                    '[data-testid="hrd-sbui-header-section"]'
-                )
-            )
-        )
-        header_section_txt = section.text.split('\n')
-        self.guest_name = header_section_txt[1]
+        content = page.get_by_test_id(
+            "hosting-details-whos-coming"
+        ).inner_text()
 
-    def _set_guests_qty(self, driver: webdriver.Chrome):
+        # content examples
+        # 1 guest
+        # 'Who’s coming\nJane Doe\nLives in Tampa, FL'
+        # 2 guests
+        # 'Who’s coming\nJohn Doe\nEnjoys basketball\nJane\nEnjoys animals'
+
+        content_lines = content.split('\n')
+        guests = content_lines[1::2]  # every odd line is guest name
+        self.guest_name = guests[0]  # just use first guest
+        self.guests_qty = len(guests)
+
+    def set_cleaning_fee(self, page: Page):
         if self.reservation_url is None:
             raise ValueError("reservation_url is required")
 
-        if driver.current_url != self.reservation_url:
-            driver.get(self.reservation_url)
+        if page.url != self.reservation_url:
+            page.goto(self.reservation_url)
+        page.wait_for_timeout(random.randint(1000, 5000))
 
-        section = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (
-                    By.CSS_SELECTOR,
-                    '[data-testid="hrd-sbui-header-section"]'
-                )
-            )
-        )
+        page.get_by_test_id("hosting-details-payment-info").click()
+        page.wait_for_timeout(random.randint(1000, 5000))
 
-        header_section_txt = section.text.split('\n')
+        content = page.get_by_text("Cleaning fee$").inner_text()
+        page.get_by_role("button", name="Close").click()
+        page.wait_for_timeout(random.randint(1000, 5000))
 
-        for txt in header_section_txt:
-            match = re.search(r"(\d+)\s+guests?", txt)
-            if match:
-                self.guests_qty = int(match.group(1))
-                break
+        # content example
+        # 'Cleaning fee\n$140.00'
 
-    def _set_cleaning_fee(self, driver: webdriver.Chrome):
-        if self.reservation_url is None:
-            raise ValueError("reservation_url is required")
+        content_lines = content.split('\n')
+        cleaning_fee_str = content_lines[1].replace('$', '')
+        self.cleaning_fee = int(float(cleaning_fee_str))
 
-        if driver.current_url != self.reservation_url:
-            driver.get(self.reservation_url)
-
-        section = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (
-                    By.CSS_SELECTOR,
-                    '[data-testid="hrd-sbui-payment-details-section"]'
-                )
-            )
-        )
-
-        section_txt = section.text.split('\n')
-
-        for i in range(len(section_txt)):
-            match = re.search("Cleaning", section_txt[i])
-            if match:
-                cln_fee_str = section_txt[i + 1].replace('$', '').split('.')[0]
-                self.cleaning_fee = int(cln_fee_str)
-                break
-
-    def _set_message_text(self, driver: webdriver.Chrome):
+    def set_message_text(self, page: Page):
         if self.message_url is None:
-            return
+            raise ValueError("message_url is required")
 
-        if driver.current_url != self.message_url:
-            driver.get(self.message_url)
+        if page.url != self.message_url:
+            page.goto(self.message_url)
+        page.wait_for_timeout(random.randint(1000, 5000))
 
         buffer = StringIO()
 
         try:
-            driver.get(self.message_url)
-
-            message_list = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located(
-                    (
-                        By.CSS_SELECTOR,
-                        '[data-testid="message-list"]'
-                    )
-                )
-            )
+            message_list = page.get_by_test_id("message-list")
 
             # only get the direct child div elements (not nested ones)
-            direct_children = message_list.find_elements(
-                By.XPATH,
-                "./div"
-            )
+            divs = message_list.locator("> div").all()
 
-            for child in direct_children:
-                child_text = child.text.strip()
-                buffer.write(child_text)
+            for div in divs:
+                text = div.inner_text()
+                buffer.write(text)
 
             tmp = buffer.getvalue()
             tmp = normalize("NFKD", tmp)
-            tmp = re.sub(r"\d{2}:\d{2}\n", " ", tmp)
             tmp = tmp.replace('\n', ' ')
 
             self.message_text = tmp
@@ -429,16 +395,6 @@ class CleaningRecord:
         finally:
             if buffer:
                 buffer.close()
-
-    def update_with_selenium(self, driver: webdriver.Chrome):
-        try:
-            self._set_message_url(driver)
-            self._set_guest_name(driver)
-            self._set_guests_qty(driver)
-            self._set_cleaning_fee(driver)
-            self._set_message_text(driver)
-        except Exception as e:
-            raise Exception(f"update_properties_with_selenium: {e}")
 
     def update_with_google_ai(self, api_key: str, guests: Dict, beds: Dict, pnp_beds: Dict):
         """
@@ -518,7 +474,7 @@ class CleaningRecord:
             """
 
             response = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model=os.environ['AIBNBCLEAN_GEMINI_MODEL'],
                 contents=contents,
                 config={
                     'response_mime_type': 'application/json',
@@ -632,8 +588,7 @@ Cleaning Schedule (Old Version): https://bit.ly/4428USu
         tw_client: Client,
         tw_from_number: str,
         tw_to_number: str,
-        spreadsheet_bitly_url: str,
-        checklist_bitly_url: str
+        spreadsheet_bitly_url: str
     ):
 
         cleaning_date = self.cleaning_date.strftime("%m/%d/%Y")
@@ -665,9 +620,7 @@ Notification for {self.listing_name}
 Cleaning Date: {cleaning_date}
 Check In Date: {next_check_in_date}
 Guests: {next_guests_qty}, Beds: {next_beds_qty}
-Cleaning Checklist: {checklist_bitly_url}
-Cleaning Schedule (New Version): {spreadsheet_bitly_url}
-Cleaning Schedule (Old Version): https://bit.ly/4428USu
+Cleaning Schedule: {spreadsheet_bitly_url}
 """
 
             tw_client.messages.create(

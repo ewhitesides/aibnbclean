@@ -1,7 +1,6 @@
-from typing import Dict
+import os
+from .AirbnbBrowser import AirbnbBrowser
 from .CleaningRecord import CleaningRecord
-from .get_webdriver import get_webdriver
-from .login_airbnb import login_airbnb
 from .get_google_ss_credentials import get_google_ss_credentials
 from .get_google_ss_header_dict import get_google_ss_header_dict
 from .get_google_ss_cleaning_records import get_google_ss_cleaning_records
@@ -14,13 +13,24 @@ from .get_todoist_api import get_todoist_api
 from .get_todoist_project_id import get_todoist_project_id
 
 
-def process_ab_listing(browser_dir: str, listing: Dict, secrets: Dict):
+def process_ab_listing(listing: dict, secrets: dict) -> None:
 
-    driver = None
+    ab = None
 
     try:
         # start notice
         print(f"starting listing {listing['name']}")
+
+        # login to airbnb
+        headless = os.environ["AIBNBCLEAN_HEADLESS"] in ['1']
+        ab = AirbnbBrowser(headless=headless)
+        logged_in = ab.is_logged_in()
+        if not logged_in:
+            raise Exception(
+                "not logged in to Airbnb, run login function first"
+            )
+
+        page = ab.get_new_page()
 
         # get previous crs from google spreadsheet
         google_cred = get_google_ss_credentials(secrets['google_sa'])
@@ -50,11 +60,6 @@ def process_ab_listing(browser_dir: str, listing: Dict, secrets: Dict):
             listing['qty_to_process'] + 1
         )
 
-        driver = get_webdriver(browser_dir)
-
-        abuser, abpass = secrets['airbnb_userpass'].split(':')
-        login_airbnb(driver, abuser, abpass)
-
         new_crs = []
         for i in range(len(gcal_entries)):
             cr = CleaningRecord.from_gcal_ab_reservation(
@@ -65,7 +70,10 @@ def process_ab_listing(browser_dir: str, listing: Dict, secrets: Dict):
                 listing['laundry']
             )
 
-            cr.update_with_selenium(driver)
+            cr.set_message_url(page)
+            cr.set_message_text(page)
+            cr.set_guest_name_qty(page)
+            cr.set_cleaning_fee(page)
 
             cr.update_with_google_ai(
                 secrets['gemini_api_key'],
@@ -135,8 +143,7 @@ def process_ab_listing(browser_dir: str, listing: Dict, secrets: Dict):
                     tw_client=tw_client,
                     tw_from_number=secrets['twilio']['from_number'],
                     tw_to_number=secrets['twilio']['to_number'],
-                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url'],
-                    checklist_bitly_url=listing['checklist_bitly_url']
+                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url']
                 )
                 cr.new_pay_reminder_task(
                     td_api=td_api,
@@ -188,5 +195,5 @@ def process_ab_listing(browser_dir: str, listing: Dict, secrets: Dict):
         print(f"error processing listing {listing['name']}: {e}")
 
     finally:
-        if driver:
-            driver.quit()
+        if ab:
+            ab.close()
