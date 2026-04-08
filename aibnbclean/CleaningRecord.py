@@ -554,8 +554,7 @@ class CleaningRecord:
         text_body = f"""
 Notification for {self.listing_name}
 Cleaning Date added: {cleaning_date}
-Cleaning Schedule (New Version): {spreadsheet_bitly_url}
-Cleaning Schedule (Old Version): https://bit.ly/4428USu
+Cleaning Schedule: {spreadsheet_bitly_url}
 """
         tw_client.messages.create(
             to=tw_to_number,
@@ -574,8 +573,7 @@ Cleaning Schedule (Old Version): https://bit.ly/4428USu
         text_body = f"""
 Notification for {self.listing_name}
 Cleaning Date removed: {cleaning_date}
-Cleaning Schedule (New Version): {spreadsheet_bitly_url}
-Cleaning Schedule (Old Version): https://bit.ly/4428USu
+Cleaning Schedule: {spreadsheet_bitly_url}
 """
         tw_client.messages.create(
             to=tw_to_number,
