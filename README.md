@@ -145,5 +145,5 @@ the following example runs at 1:30pm daily
 
 ```cron
 30 13 * * * date > /tmp/aibnbclean.log
-30 13 * * * cd $HOME/aibnbclean; source .venv/bin/activate; python -c "import aibnbclean; aibnbclean.process()" >> /tmp/aibnbclean.log 2>&1
+30 13 * * * cd $HOME/aibnbclean && $HOME/aibnbclean/.venv/bin/python -c "import aibnbclean; aibnbclean.process()" >> /tmp/aibnbclean.log 2>&1
 ```
