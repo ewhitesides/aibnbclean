@@ -355,7 +355,7 @@ class CleaningRecord:
         page.get_by_test_id("hosting-details-payment-info").click()
         page.wait_for_timeout(random.randint(1000, 5000))
 
-        content = page.get_by_text("Cleaning fee$").inner_text()
+        content = page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
         page.get_by_role("button", name="Close").click()
         page.wait_for_timeout(random.randint(1000, 5000))
 
