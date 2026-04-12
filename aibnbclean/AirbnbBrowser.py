@@ -32,6 +32,10 @@ class AirbnbBrowser:
 
     def get_new_page(self) -> Page:
         # Contexts provide isolation without the overhead of a new browser process
+        if not self.context:
+            raise RuntimeError(
+                "browser context not initialized. Use 'with' statement or call __enter__"
+            )
         context = self.context
         return context.new_page()
 
