@@ -17,15 +17,14 @@ class TestCleaningRecord(unittest.TestCase):
 
         config_dir = os.environ["AIBNBCLEAN_CONFIG_DIR"]
 
-        listings = get_json_file_data(
-            filepath=f"{config_dir}/listings.json"
-        )
+        browser_headless = False
+        browser_user_data_dir = f"{config_dir}/browser_profile"
+
+        listings = get_json_file_data(filepath=f"{config_dir}/listings.json")
         listing = listings[0]
 
         gcal_entries = get_gcal_entries(
-            url=listing['url'],
-            type=listing['type'],
-            qty=10
+            url=listing["url"], type=listing["type"], qty=10
         )
         self.assertIsInstance(gcal_entries, list)
 
@@ -33,15 +32,17 @@ class TestCleaningRecord(unittest.TestCase):
 
         cr = CleaningRecord.from_gcal_ab_reservation(
             gcal_entry,
-            listing['name'],
-            listing['type'],
-            listing['default_cleaning_fee'],
-            listing['laundry']
+            listing["name"],
+            listing["type"],
+            listing["default_cleaning_fee"],
+            listing["laundry"],
         )
 
         self.assertIsInstance(cr, CleaningRecord)
 
-        ab = AirbnbBrowser(headless=False)
+        ab = AirbnbBrowser(
+            headless=browser_headless, user_data_dir=browser_user_data_dir
+        )
         self.assertTrue(ab.is_logged_in())
 
         page = ab.get_new_page()
