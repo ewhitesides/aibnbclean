@@ -17,47 +17,49 @@ class TestCleaningRecord(unittest.TestCase):
 
         config_dir = os.environ["AIBNBCLEAN_CONFIG_DIR"]
 
-        listings = get_json_file_data(
-            filepath=f"{config_dir}/listings.json"
-        )
+        listings = get_json_file_data(filepath=f"{config_dir}/listings.json")
         listing = listings[0]
 
-        gcal_entries = get_gcal_entries(
-            url=listing['url'],
-            type=listing['type'],
-            qty=10
-        )
-        self.assertIsInstance(gcal_entries, list)
+        browser_headless = False
+        browser_user_data_dir = f"{config_dir}/browser_profile"
 
-        gcal_entry = gcal_entries[1]
+        with AirbnbBrowser(
+            headless=browser_headless, user_data_dir=browser_user_data_dir
+        ) as ab:
 
-        cr = CleaningRecord.from_gcal_ab_reservation(
-            gcal_entry,
-            listing['name'],
-            listing['type'],
-            listing['default_cleaning_fee'],
-            listing['laundry']
-        )
+            gcal_entries = get_gcal_entries(
+                url=listing["url"], type=listing["type"], qty=10
+            )
+            self.assertIsInstance(gcal_entries, list)
 
-        self.assertIsInstance(cr, CleaningRecord)
+            gcal_entry = gcal_entries[1]
 
-        ab = AirbnbBrowser(headless=False)
-        self.assertTrue(ab.is_logged_in())
+            cr = CleaningRecord.from_gcal_ab_reservation(
+                gcal_entry,
+                listing["name"],
+                listing["type"],
+                listing["default_cleaning_fee"],
+                listing["laundry"],
+            )
 
-        page = ab.get_new_page()
+            self.assertIsInstance(cr, CleaningRecord)
 
-        cr.set_message_url(page)
-        self.assertIsNotNone(cr.message_url)
+            self.assertTrue(ab.is_logged_in())
 
-        cr.set_message_text(page)
-        self.assertIsNotNone(cr.message_text)
+            page = ab.get_new_page()
 
-        cr.set_guest_name_qty(page)
-        self.assertIsNotNone(cr.guest_name)
-        self.assertNotEqual(cr.guest_name, 0)
+            cr.set_message_url(page)
+            self.assertIsNotNone(cr.message_url)
 
-        # test set_cleaning_fee method by setting cleaning_fee to 0
-        # and then calling the method to update it
-        cr.cleaning_fee = 0
-        cr.set_cleaning_fee(page)
-        self.assertNotEqual(cr.cleaning_fee, 0)
+            cr.set_message_text(page)
+            self.assertIsNotNone(cr.message_text)
+
+            cr.set_guest_name_qty(page)
+            self.assertIsNotNone(cr.guest_name)
+            self.assertNotEqual(cr.guest_name, 0)
+
+            # test set_cleaning_fee method by setting cleaning_fee to 0
+            # and then calling the method to update it
+            cr.cleaning_fee = 0
+            cr.set_cleaning_fee(page)
+            self.assertNotEqual(cr.cleaning_fee, 0)

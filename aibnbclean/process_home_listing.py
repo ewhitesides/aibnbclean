@@ -14,137 +14,125 @@ from .get_todoist_project_id import get_todoist_project_id
 
 def process_home_listing(listing: Dict, secrets: Dict):
 
-    try:
-        # start notice
-        print(f"starting listing {listing['name']}")
+    # start notice
+    print(f"starting listing {listing['name']}")
 
-        # get previous crs from google spreadsheet
-        google_cred = get_google_ss_credentials(secrets['google_sa'])
+    # get previous crs from google spreadsheet
+    google_cred = get_google_ss_credentials(secrets["google_sa"])
 
-        google_ss_header_dict = get_google_ss_header_dict(
+    google_ss_header_dict = get_google_ss_header_dict(
+        credentials=google_cred,
+        ss_id=listing["spreadsheet_id"],
+        ss_name=listing["spreadsheet_sheet_name"],
+    )
+
+    prev_crs = get_google_ss_cleaning_records(
+        credentials=google_cred,
+        ss_id=listing["spreadsheet_id"],
+        ss_sheet_name=listing["spreadsheet_sheet_name"],
+        ss_header_dict=google_ss_header_dict,
+        listing_name=listing["name"],
+        listing_type=listing["type"],
+    )
+
+    # get new crs from google calendar
+    gcal_entries = get_gcal_entries(
+        listing["url"], listing["type"], listing["qty_to_process"]
+    )
+
+    new_crs = []
+    for i in range(len(gcal_entries)):
+        cr = CleaningRecord.from_gcal_home_cleaning(
+            gcal_entries[i],
+            listing["name"],
+            listing["type"],
+            listing["default_cleaning_fee"],
+            listing["laundry"],
+        )
+
+        new_crs.append(cr)
+
+    # delete prev_crs from ss
+    prev_crs_indexes = []
+    for cr in prev_crs:
+        prev_crs_indexes.append(cr.spreadsheet_index)
+
+    if len(prev_crs_indexes) > 0:
+        rm_google_ss_rows(
             credentials=google_cred,
-            ss_id=listing['spreadsheet_id'],
-            ss_name=listing['spreadsheet_sheet_name']
+            ss_id=listing["spreadsheet_id"],
+            ss_sheet_name=listing["spreadsheet_sheet_name"],
+            ss_sheet_id=listing["spreadsheet_sheet_id"],
+            indexes=prev_crs_indexes,
         )
 
-        prev_crs = get_google_ss_cleaning_records(
+    # add new_crs to ss
+    ssrows = []
+    for cr in new_crs:
+        ssrow = cr.to_ssrow(google_ss_header_dict)
+        ssrows.append(ssrow)
+
+    if len(ssrows) > 0:
+        add_google_ss_rows(
             credentials=google_cred,
-            ss_id=listing['spreadsheet_id'],
-            ss_sheet_name=listing['spreadsheet_sheet_name'],
-            ss_header_dict=google_ss_header_dict,
-            listing_name=listing['name'],
-            listing_type=listing['type']
+            ss_id=listing["spreadsheet_id"],
+            ss_sheet_name=listing["spreadsheet_sheet_name"],
+            values=ssrows,
         )
 
-        # get new crs from google calendar
-        gcal_entries = get_gcal_entries(
-            listing['url'],
-            listing['type'],
-            listing['qty_to_process']
-        )
+    # sort spreadsheet
+    sort_google_ss_by_column(
+        credentials=google_cred,
+        ss_id=listing["spreadsheet_id"],
+        ss_sheet_id=listing["spreadsheet_sheet_id"],
+        sort_column=google_ss_header_dict["cleaning_date"],
+    )
 
-        new_crs = []
-        for i in range(len(gcal_entries)):
-            cr = CleaningRecord.from_gcal_home_cleaning(
-                gcal_entries[i],
-                listing['name'],
-                listing['type'],
-                listing['default_cleaning_fee'],
-                listing['laundry']
+    # load twilio/todoist
+    # twilio is used for sms reminders that are sent to the cleaner
+    # todoist is used for tasks for the property manager
+    tw_client = get_twilio_client(secrets["twilio"]["client"])
+    td_api = get_todoist_api(secrets["todoist_api_key"])
+    td_pid = get_todoist_project_id(
+        project_name=listing["todoist_project_name"], api=td_api
+    )
+
+    # send sms reminders/todoist tasks for each cr with cleaning date tomorrow
+    for cr in new_crs:
+        if cr.cleaning_is_tomorrow():
+            cr.send_cleaning_reminder_sms(
+                tw_client=tw_client,
+                tw_from_number=secrets["twilio"]["from_number"],
+                tw_to_number=secrets["twilio"]["to_number"],
+                spreadsheet_bitly_url=listing["spreadsheet_bitly_url"],
+            )
+            cr.new_pay_reminder_task(td_api=td_api, td_project_id=td_pid)
+
+    # alert on records added
+    prev_crs_ids = [prev_cr.id for prev_cr in prev_crs]
+    for cr in new_crs:
+        if cr.id not in prev_crs_ids and cr.cleaning_is_within(
+            days=listing["days_addrm_notice"]
+        ):
+            cr.send_date_added_sms(
+                tw_client=tw_client,
+                tw_from_number=secrets["twilio"]["from_number"],
+                tw_to_number=secrets["twilio"]["to_number"],
+                spreadsheet_bitly_url=listing["spreadsheet_bitly_url"],
             )
 
-            new_crs.append(cr)
-
-        # delete prev_crs from ss
-        prev_crs_indexes = []
-        for cr in prev_crs:
-            prev_crs_indexes.append(cr.spreadsheet_index)
-
-        if len(prev_crs_indexes) > 0:
-            rm_google_ss_rows(
-                credentials=google_cred,
-                ss_id=listing['spreadsheet_id'],
-                ss_sheet_name=listing['spreadsheet_sheet_name'],
-                ss_sheet_id=listing['spreadsheet_sheet_id'],
-                indexes=prev_crs_indexes
+    # alert on records removed
+    new_crs_ids = [new_cr.id for new_cr in new_crs]
+    for cr in prev_crs:
+        if cr.id not in new_crs_ids and cr.cleaning_is_within(
+            days=listing["days_addrm_notice"]
+        ):
+            cr.send_date_removed_sms(
+                tw_client=tw_client,
+                tw_from_number=secrets["twilio"]["from_number"],
+                tw_to_number=secrets["twilio"]["to_number"],
+                spreadsheet_bitly_url=listing["spreadsheet_bitly_url"],
             )
 
-        # add new_crs to ss
-        ssrows = []
-        for cr in new_crs:
-            ssrow = cr.to_ssrow(google_ss_header_dict)
-            ssrows.append(ssrow)
-
-        if len(ssrows) > 0:
-            add_google_ss_rows(
-                credentials=google_cred,
-                ss_id=listing['spreadsheet_id'],
-                ss_sheet_name=listing['spreadsheet_sheet_name'],
-                values=ssrows
-            )
-
-        # sort spreadsheet
-        sort_google_ss_by_column(
-            credentials=google_cred,
-            ss_id=listing['spreadsheet_id'],
-            ss_sheet_id=listing['spreadsheet_sheet_id'],
-            sort_column=google_ss_header_dict['cleaning_date']
-        )
-
-        # load twilio/todoist
-        # twilio is used for sms reminders that are sent to the cleaner
-        # todoist is used for tasks for the property manager
-        tw_client = get_twilio_client(secrets['twilio']['client'])
-        td_api = get_todoist_api(secrets['todoist_api_key'])
-        td_pid = get_todoist_project_id(
-            project_name=listing['todoist_project_name'],
-            api=td_api
-        )
-
-        # send sms reminders/todoist tasks for each cr with cleaning date tomorrow
-        for cr in new_crs:
-            if cr.cleaning_is_tomorrow():
-                cr.send_cleaning_reminder_sms(
-                    tw_client=tw_client,
-                    tw_from_number=secrets['twilio']['from_number'],
-                    tw_to_number=secrets['twilio']['to_number'],
-                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url']
-                )
-                cr.new_pay_reminder_task(
-                    td_api=td_api,
-                    td_project_id=td_pid
-                )
-
-        # alert on records added
-        prev_crs_ids = [prev_cr.id for prev_cr in prev_crs]
-        for cr in new_crs:
-            if (
-                cr.id not in prev_crs_ids and
-                cr.cleaning_is_within(days=listing['days_addrm_notice'])
-            ):
-                cr.send_date_added_sms(
-                    tw_client=tw_client,
-                    tw_from_number=secrets['twilio']['from_number'],
-                    tw_to_number=secrets['twilio']['to_number'],
-                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url']
-                )
-
-        # alert on records removed
-        new_crs_ids = [new_cr.id for new_cr in new_crs]
-        for cr in prev_crs:
-            if (
-                cr.id not in new_crs_ids and
-                cr.cleaning_is_within(days=listing['days_addrm_notice'])
-            ):
-                cr.send_date_removed_sms(
-                    tw_client=tw_client,
-                    tw_from_number=secrets['twilio']['from_number'],
-                    tw_to_number=secrets['twilio']['to_number'],
-                    spreadsheet_bitly_url=listing['spreadsheet_bitly_url']
-                )
-
-        # completion notice
-        print(f"completed listing {listing['name']}")
-
-    except Exception as e:
-        print(f"error processing listing {listing['name']}: {e}")
+    # completion notice
+    print(f"completed listing {listing['name']}")
