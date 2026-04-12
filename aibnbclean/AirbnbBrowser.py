@@ -3,23 +3,32 @@ from playwright.sync_api import sync_playwright, Page
 
 
 class AirbnbBrowser:
-    def __init__(
-        self,
-        headless: bool,
-        user_data_dir=os.getenv('AIBNBCLEAN_CONFIG_DIR')
-    ):
+    def __init__(self, headless: bool, user_data_dir: str):
+        self.headless = headless
+        self.user_data_dir = user_data_dir
+        self.playwright = None
+        self.context = None
+
+    def __enter__(self):
         self.playwright = sync_playwright().start()
         self.context = self.playwright.chromium.launch_persistent_context(
-            user_data_dir=f"{user_data_dir}/browser_profile",
-            headless=headless,
+            user_data_dir=self.user_data_dir,
+            headless=self.headless,
             args=[
                 "--start-maximized",
                 "--disable-session-crashed-bubble",
                 "--hide-crash-restore-bubble",
                 "--disable-infobars",
-                "--disable-notifications"
-            ]
+                "--disable-notifications",
+            ],
         )
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.context:
+            self.context.close()
+        if self.playwright:
+            self.playwright.stop()
 
     def get_new_page(self) -> Page:
         # Contexts provide isolation without the overhead of a new browser process
@@ -40,7 +49,3 @@ class AirbnbBrowser:
         page.wait_for_url("https://www.airbnb.com/hosting", timeout=0)
         print("login successful, closing browser")
         page.close()  # Cleanup the specific page/context
-
-    def close(self):
-        self.context.close()
-        self.playwright.stop()
