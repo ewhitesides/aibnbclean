@@ -10,15 +10,14 @@ def get_google_ss_cleaning_records(
     ss_sheet_name: str,
     ss_header_dict: Dict,
     listing_name: str,
-    listing_type: str
+    listing_type: str,
 ) -> List[CleaningRecord]:
 
-    service = build('sheets', 'v4', credentials=credentials)
+    service = build("sheets", "v4", credentials=credentials)
     sheet = service.spreadsheets()
 
     result = (
-        sheet.values().get(spreadsheetId=ss_id,
-                           range=f"{ss_sheet_name}!A2:Z").execute()
+        sheet.values().get(spreadsheetId=ss_id, range=f"{ss_sheet_name}!A2:Z").execute()
     )
 
     rows = result.get("values", [])
@@ -34,13 +33,11 @@ def get_google_ss_cleaning_records(
     crs = []
     for i, row in enumerate(padded_rows):
         if (
-            row[ss_header_dict['listing_name']] == listing_name and
-            row[ss_header_dict['listing_type']] == listing_type
+            row[ss_header_dict["listing_name"]] == listing_name
+            and row[ss_header_dict["listing_type"]] == listing_type
         ):
             cr = CleaningRecord.from_ssrow(
-                (i+1),  # rows are 1 indexed
-                row,
-                ss_header_dict
+                (i + 1), row, ss_header_dict  # rows are 1 indexed
             )
             crs.append(cr)
 

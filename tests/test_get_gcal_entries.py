@@ -15,14 +15,10 @@ class GetGcalEntries(unittest.TestCase):
 
         config_dir = os.environ["AIBNBCLEAN_CONFIG_DIR"]
 
-        listings = get_json_file_data(
-            filepath=f"{config_dir}/listings.json"
-        )
+        listings = get_json_file_data(filepath=f"{config_dir}/listings.json")
 
         gcal_entries = get_gcal_entries(
-            url=listings[0]['url'],
-            type=listings[0]['type'],
-            qty=1
+            url=listings[0]["url"], type=listings[0]["type"], qty=1
         )
 
         self.assertIsInstance(gcal_entries, list)
