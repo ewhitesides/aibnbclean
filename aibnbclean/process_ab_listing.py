@@ -60,6 +60,7 @@ def process_ab_listing(listing: dict, secrets: dict, browser: AirbnbBrowser) -> 
             listing["default_cleaning_fee"],
             listing["laundry"],
         )
+        print(f"processing id {cr.id}")
 
         cr.set_message_url(page)
         cr.set_message_text(page)
