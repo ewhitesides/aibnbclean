@@ -13,11 +13,10 @@ the following is some basic code that helps automate cleaning scheduling and com
 ### initial setup
 
 ```pwsh
-# install python
-winget install python
-
-# install uv package manager
-pip install uv
+# prerequisite installs
+winget install --id python
+winget install --id astral-sh.uv
+winget install --id Google.Chrome
 
 # clone this repo
 git clone <repo url>
@@ -46,7 +45,7 @@ create listings.json in the config directory specified in the .env file
 ```json
 [
     {
-        "name": "403M St NW Lower",
+        "name": "My cool Airbnb",
         "type": "airbnb",
         "laundry": "yes",
         "url": "https://www.airbnb.com/calendar/ical/xxxxxxxx.ics?s=yyyyyyy",
@@ -122,21 +121,20 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # cd to config directory
 cd ~/aibnbclean
 
-# create and activate the venv
-uv venv
-source .venv/bin/activate
+# create .env and json files similar to above and place in config directory
 
-# install aibnbclean package into the venv
-uv pip install --refresh aibnbclean
+# install
+uv tool uninstall aibnbclean
+uv tool install aibnbclean --refresh
 
-# install playwright
-playwright install --with-deps
+# install playwright browser binaries
+uv tool run --from playwright playwright install chromium
 
 # execute the login function once to create browser_profile with access to airbnb
-python -c "import aibnbclean; aibnbclean.login()"
+aibnbclean_login
 
 # once logged in you should be able to do a test run
-python -c "import aibnbclean; aibnbclean.process()"
+aibnbclean_process
 ```
 
 ## run daily using cron
@@ -145,5 +143,5 @@ the following example runs at 1:30pm daily
 
 ```cron
 30 13 * * * date > /tmp/aibnbclean.log
-30 13 * * * cd $HOME/aibnbclean && $HOME/aibnbclean/.venv/bin/python -c "import aibnbclean; aibnbclean.process()" >> /tmp/aibnbclean.log 2>&1
+30 13 * * * cd $HOME/aibnbclean && $HOME/.local/bin/aibnbclean_process >> /tmp/aibnbclean.log 2>&1
 ```
