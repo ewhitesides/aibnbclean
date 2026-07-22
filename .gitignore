@@ -11,6 +11,5 @@ __pycache__/
 *egg-info/
 
 #ignore the following
-*.code-workspace
 listings.json
 secrets.json
