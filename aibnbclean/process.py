@@ -1,10 +1,9 @@
 import os
 from dotenv import load_dotenv
-from .get_json_file_data import get_json_file_data
-from .process_ab_listing import process_ab_listing
-from .process_home_listing import process_home_listing
-from .get_json_file_data import get_json_file_data
-from .AirbnbBrowser import AirbnbBrowser
+from get_json_file_data import get_json_file_data
+from process_ab_listing import process_ab_listing
+from process_home_listing import process_home_listing
+from AirbnbBrowser import AirbnbBrowser
 
 
 def process():

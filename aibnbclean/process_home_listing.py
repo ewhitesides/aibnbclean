@@ -1,15 +1,15 @@
 from typing import Dict
-from .CleaningRecord import CleaningRecord
-from .get_google_ss_credentials import get_google_ss_credentials
-from .get_google_ss_header_dict import get_google_ss_header_dict
-from .get_google_ss_cleaning_records import get_google_ss_cleaning_records
-from .get_gcal_entries import get_gcal_entries
-from .rm_google_ss_rows import rm_google_ss_rows
-from .add_google_ss_rows import add_google_ss_rows
-from .sort_google_ss_by_column import sort_google_ss_by_column
-from .get_twilio_client import get_twilio_client
-from .get_todoist_api import get_todoist_api
-from .get_todoist_project_id import get_todoist_project_id
+from CleaningRecord import CleaningRecord
+from get_google_ss_credentials import get_google_ss_credentials
+from get_google_ss_header_dict import get_google_ss_header_dict
+from get_google_ss_cleaning_records import get_google_ss_cleaning_records
+from get_gcal_entries import get_gcal_entries
+from rm_google_ss_rows import rm_google_ss_rows
+from add_google_ss_rows import add_google_ss_rows
+from sort_google_ss_by_column import sort_google_ss_by_column
+from get_twilio_client import get_twilio_client
+from get_todoist_api import get_todoist_api
+from get_todoist_project_id import get_todoist_project_id
 
 
 def process_home_listing(listing: Dict, secrets: Dict):

@@ -1,7 +1,7 @@
 from typing import List
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from .add_google_ss_rows import add_google_ss_rows
+from add_google_ss_rows import add_google_ss_rows
 
 
 def rm_google_ss_rows(
