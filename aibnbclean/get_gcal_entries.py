@@ -6,10 +6,10 @@ from recurring_ical_events import of
 
 
 def get_gcal_entries(url: str, type: str, qty: int) -> List[Event]:
-    if type == 'airbnb':
-        summary_title = 'Reserved'
-    elif type == 'home':
-        summary_title = 'cleaning'
+    if type == "airbnb":
+        summary_title = "Reserved"
+    elif type == "home":
+        summary_title = "cleaning"
     else:
         raise Exception("invalid type specified, expecting 'airbnb' or 'home'")
 
@@ -25,7 +25,7 @@ def get_gcal_entries(url: str, type: str, qty: int) -> List[Event]:
     while len(events) < qty:
         try:
             event = next(event_generator)
-            if event['SUMMARY'] == summary_title:
+            if event["SUMMARY"] == summary_title:
                 events.append(event)
         except StopIteration:
             break

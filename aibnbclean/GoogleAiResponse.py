@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class GoogleAiResponse:
     guests_qty: int

@@ -48,7 +48,7 @@ class CleaningRecord:
         next_car_color: Optional[str],
         next_car_license_number: Optional[str],
         next_car_license_state: Optional[str],
-        next_phone_last_4_digits: Optional[str]
+        next_phone_last_4_digits: Optional[str],
     ):
         self.id = id
         self.reservation_url = reservation_url
@@ -86,37 +86,33 @@ class CleaningRecord:
         self.next_phone_last_4_digits = next_phone_last_4_digits
 
     @classmethod
-    def from_ssrow(cls, index, row, header_dict) -> 'CleaningRecord':
+    def from_ssrow(cls, index, row, header_dict) -> "CleaningRecord":
 
-        cleaning_date = row[header_dict['cleaning_date']]
+        cleaning_date = row[header_dict["cleaning_date"]]
         if isinstance(cleaning_date, str):
             cleaning_date = datetime.strptime(
-                row[header_dict['cleaning_date']], '%m/%d/%Y'
+                row[header_dict["cleaning_date"]], "%m/%d/%Y"
             )
         elif isinstance(cleaning_date, date):
-            cleaning_date = datetime.combine(
-                cleaning_date,
-                datetime.min.time()
-            )
+            cleaning_date = datetime.combine(cleaning_date, datetime.min.time())
 
-        next_check_in_date = row[header_dict['next_check_in_date']]
+        next_check_in_date = row[header_dict["next_check_in_date"]]
         if isinstance(next_check_in_date, str):
             next_check_in_date = datetime.strptime(
-                row[header_dict['next_check_in_date']], '%m/%d/%Y'
+                row[header_dict["next_check_in_date"]], "%m/%d/%Y"
             )
         elif isinstance(next_check_in_date, date):
             next_check_in_date = datetime.combine(
-                next_check_in_date,
-                datetime.min.time()
+                next_check_in_date, datetime.min.time()
             )
 
         return cls(
-            id=row[header_dict['id']],
+            id=row[header_dict["id"]],
             reservation_url=None,
             message_url=None,
             message_text=None,
-            listing_name=row[header_dict['listing_name']],
-            listing_type=row[header_dict['listing_type']],
+            listing_name=row[header_dict["listing_name"]],
+            listing_type=row[header_dict["listing_type"]],
             spreadsheet_index=index,
             guest_name=None,
             check_in_date=None,
@@ -124,8 +120,8 @@ class CleaningRecord:
             guests_qty=None,
             beds_qty=None,
             pnp_beds_qty=None,
-            cleaning_fee=row[header_dict['cleaning_fee']],
-            laundry=row[header_dict['laundry']],
+            cleaning_fee=row[header_dict["cleaning_fee"]],
+            laundry=row[header_dict["laundry"]],
             car_make=None,
             car_model=None,
             car_color=None,
@@ -136,15 +132,15 @@ class CleaningRecord:
             next_check_in_date=next_check_in_date,
             next_cleaning_date=None,
             next_guest_name=None,
-            next_guests_qty=row[header_dict['next_guests_qty']],
-            next_beds_qty=row[header_dict['next_beds_qty']],
-            next_pnp_beds_qty=row[header_dict['next_pnp_beds_qty']],
-            next_car_make=row[header_dict['next_car_make']],
-            next_car_model=row[header_dict['next_car_model']],
-            next_car_color=row[header_dict['next_car_color']],
-            next_car_license_number=row[header_dict['next_car_license_number']],
-            next_car_license_state=row[header_dict['next_car_license_state']],
-            next_phone_last_4_digits=row[header_dict['next_phone_last_4_digits']]
+            next_guests_qty=row[header_dict["next_guests_qty"]],
+            next_beds_qty=row[header_dict["next_beds_qty"]],
+            next_pnp_beds_qty=row[header_dict["next_pnp_beds_qty"]],
+            next_car_make=row[header_dict["next_car_make"]],
+            next_car_model=row[header_dict["next_car_model"]],
+            next_car_color=row[header_dict["next_car_color"]],
+            next_car_license_number=row[header_dict["next_car_license_number"]],
+            next_car_license_state=row[header_dict["next_car_license_state"]],
+            next_phone_last_4_digits=row[header_dict["next_phone_last_4_digits"]],
         )
 
     def to_ssrow(self, header_dict) -> List[str]:
@@ -175,29 +171,22 @@ class CleaningRecord:
         listing_name: str,
         listing_type: str,
         default_cleaning_fee: int,
-        laundry: str
-    ) -> 'CleaningRecord':
+        laundry: str,
+    ) -> "CleaningRecord":
 
-        split_desc = gc_event['DESCRIPTION'].split('\n')
+        split_desc = gc_event["DESCRIPTION"].split("\n")
 
         check_in_date = gc_event.DTSTART
         if isinstance(check_in_date, date):
-            check_in_date = datetime.combine(
-                check_in_date,
-                datetime.min.time()
-            )
+            check_in_date = datetime.combine(check_in_date, datetime.min.time())
 
         cleaning_date = gc_event.DTEND
         if isinstance(cleaning_date, date):
-            cleaning_date = datetime.combine(
-                cleaning_date,
-                datetime.min.time()
-            )
+            cleaning_date = datetime.combine(cleaning_date, datetime.min.time())
 
         return cls(
-            id=split_desc[0].split('/')[-1].strip(),
-            reservation_url=split_desc[0].split(
-                'Reservation URL: ')[1].strip(),
+            id=split_desc[0].split("/")[-1].strip(),
+            reservation_url=split_desc[0].split("Reservation URL: ")[1].strip(),
             message_url=None,
             message_text=None,
             listing_name=listing_name,
@@ -216,7 +205,7 @@ class CleaningRecord:
             car_color=None,
             car_license_number=None,
             car_license_state=None,
-            phone_last_4_digits=split_desc[1].split(': ')[-1].strip(),
+            phone_last_4_digits=split_desc[1].split(": ")[-1].strip(),
             next_id=None,
             next_check_in_date=None,
             next_cleaning_date=None,
@@ -229,7 +218,7 @@ class CleaningRecord:
             next_car_color=None,
             next_car_license_number=None,
             next_car_license_state=None,
-            next_phone_last_4_digits=None
+            next_phone_last_4_digits=None,
         )
 
     @classmethod
@@ -239,25 +228,22 @@ class CleaningRecord:
         listing_name: str,
         listing_type: str,
         default_cleaning_fee: int,
-        laundry: str
-    ) -> 'CleaningRecord':
+        laundry: str,
+    ) -> "CleaningRecord":
 
         # generate a 10 character code for the id so it's similar to
         # the airbnb reservation id
-        id_p0 = gc_event['UID'].split('@')[0].strip()
+        id_p0 = gc_event["UID"].split("@")[0].strip()
         id_p1 = gc_event.DTSTART.strftime("%m/%d/%Y")
         id_p2 = gc_event.DTEND.strftime("%m/%d/%Y")
         id_str = id_p0 + id_p1 + id_p2
 
         cleaning_date = gc_event.DTEND
         if isinstance(cleaning_date, date):
-            cleaning_date = datetime.combine(
-                cleaning_date,
-                datetime.min.time()
-            )
+            cleaning_date = datetime.combine(cleaning_date, datetime.min.time())
 
         return cls(
-            id=hashlib.md5(id_str.encode('utf-8')).hexdigest()[0:9].upper(),
+            id=hashlib.md5(id_str.encode("utf-8")).hexdigest()[0:9].upper(),
             reservation_url=None,
             message_url=None,
             message_text=None,
@@ -290,10 +276,10 @@ class CleaningRecord:
             next_car_color=None,
             next_car_license_number=None,
             next_car_license_state=None,
-            next_phone_last_4_digits=None
+            next_phone_last_4_digits=None,
         )
 
-    def update_with_next_cr(self, next_cr: 'CleaningRecord'):
+    def update_with_next_cr(self, next_cr: "CleaningRecord"):
         self.next_id = next_cr.id
         self.next_check_in_date = next_cr.check_in_date
         self.next_cleaning_date = next_cr.cleaning_date
@@ -314,7 +300,6 @@ class CleaningRecord:
 
         if page.url != self.reservation_url:
             page.goto(self.reservation_url)
-        page.wait_for_timeout(random.randint(1000, 5000))
 
         pattern = r"/hosting/p/inbox/folder/all/thread/\d+"
         match = re.search(pattern, page.content())
@@ -327,11 +312,8 @@ class CleaningRecord:
 
         if page.url != self.reservation_url:
             page.goto(self.reservation_url)
-        page.wait_for_timeout(random.randint(1000, 5000))
 
-        content = page.get_by_test_id(
-            "hosting-details-whos-coming"
-        ).inner_text()
+        content = page.get_by_test_id("hosting-details-whos-coming").inner_text()
 
         # content examples
         # 1 guest
@@ -339,7 +321,7 @@ class CleaningRecord:
         # 2 guests
         # 'Who’s coming\nJohn Doe\nEnjoys basketball\nJane\nEnjoys animals'
 
-        content_lines = content.split('\n')
+        content_lines = content.split("\n")
         guests = content_lines[1::2]  # every odd line is guest name
         self.guest_name = guests[0]  # just use first guest
         self.guests_qty = len(guests)
@@ -350,20 +332,19 @@ class CleaningRecord:
 
         if page.url != self.reservation_url:
             page.goto(self.reservation_url)
-        page.wait_for_timeout(random.randint(1000, 5000))
 
         page.get_by_test_id("hosting-details-payment-info").click()
-        page.wait_for_timeout(random.randint(1000, 5000))
 
-        content = page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
+        content = (
+            page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
+        )
         page.get_by_role("button", name="Close").click()
-        page.wait_for_timeout(random.randint(1000, 5000))
 
         # content example
         # 'Cleaning fee\n$140.00'
 
-        content_lines = content.split('\n')
-        cleaning_fee_str = content_lines[1].replace('$', '')
+        content_lines = content.split("\n")
+        cleaning_fee_str = content_lines[1].replace("$", "")
         self.cleaning_fee = int(float(cleaning_fee_str))
 
     def set_message_text(self, page: Page):
@@ -372,7 +353,6 @@ class CleaningRecord:
 
         if page.url != self.message_url:
             page.goto(self.message_url)
-        page.wait_for_timeout(random.randint(1000, 5000))
 
         buffer = StringIO()
 
@@ -388,7 +368,7 @@ class CleaningRecord:
 
             tmp = buffer.getvalue()
             tmp = normalize("NFKD", tmp)
-            tmp = tmp.replace('\n', ' ')
+            tmp = tmp.replace("\n", " ")
 
             self.message_text = tmp
 
@@ -396,7 +376,9 @@ class CleaningRecord:
             if buffer:
                 buffer.close()
 
-    def update_with_google_ai(self, api_key: str, guests: Dict, beds: Dict, pnp_beds: Dict):
+    def update_with_google_ai(
+        self, api_key: str, guests: Dict, beds: Dict, pnp_beds: Dict
+    ):
         """
         example code
         https://ai.google.dev/gemini-api/docs/structured-output?lang=python
@@ -474,12 +456,12 @@ class CleaningRecord:
             """
 
             response = client.models.generate_content(
-                model=os.environ['AIBNBCLEAN_GEMINI_MODEL'],
+                model=os.environ["AIBNBCLEAN_GEMINI_MODEL"],
                 contents=contents,
                 config={
-                    'response_mime_type': 'application/json',
-                    'response_schema': GoogleAiResponse,
-                }
+                    "response_mime_type": "application/json",
+                    "response_schema": GoogleAiResponse,
+                },
             )
 
             if type(response.parsed) is not GoogleAiResponse:
@@ -502,15 +484,9 @@ class CleaningRecord:
     def check_in_is_today(self) -> bool:
         # check_in_date should be datetime.datetime
         # today_datetime should be datetime.datetime
-        today_datetime = datetime.combine(
-            datetime.now().date(),
-            datetime.min.time()
-        )
+        today_datetime = datetime.combine(datetime.now().date(), datetime.min.time())
 
-        if (
-            self.check_in_date is not None and
-            self.check_in_date == today_datetime
-        ):
+        if self.check_in_date is not None and self.check_in_date == today_datetime:
             return True
 
         return False
@@ -519,8 +495,7 @@ class CleaningRecord:
         # cleaning_date should be datetime.datetime
         # tomorrow_datetime should be datetime.datetime
         tomorrow_datetime = datetime.combine(
-            (datetime.now() + timedelta(days=1)).date(),
-            datetime.min.time()
+            (datetime.now() + timedelta(days=1)).date(), datetime.min.time()
         )
 
         if self.cleaning_date == tomorrow_datetime:
@@ -530,7 +505,10 @@ class CleaningRecord:
 
     def cleaning_is_within(self, days: int) -> bool:
         # make sure today has same timezone as self.cleaning_date for comparison
-        if hasattr(self.cleaning_date, 'tzinfo') and self.cleaning_date.tzinfo is not None:
+        if (
+            hasattr(self.cleaning_date, "tzinfo")
+            and self.cleaning_date.tzinfo is not None
+        ):
             today = datetime.now(self.cleaning_date.tzinfo)
         else:
             today = datetime.now()
@@ -556,18 +534,14 @@ Notification for {self.listing_name}
 Cleaning Date added: {cleaning_date}
 Cleaning Schedule: {spreadsheet_bitly_url}
 """
-        tw_client.messages.create(
-            to=tw_to_number,
-            from_=tw_from_number,
-            body=text_body
-        )
+        tw_client.messages.create(to=tw_to_number, from_=tw_from_number, body=text_body)
 
     def send_date_removed_sms(
         self,
         tw_client: Client,
         tw_from_number: str,
         tw_to_number: str,
-        spreadsheet_bitly_url: str
+        spreadsheet_bitly_url: str,
     ):
         cleaning_date = self.cleaning_date.strftime("%m/%d/%Y")
         text_body = f"""
@@ -575,42 +549,36 @@ Notification for {self.listing_name}
 Cleaning Date removed: {cleaning_date}
 Cleaning Schedule: {spreadsheet_bitly_url}
 """
-        tw_client.messages.create(
-            to=tw_to_number,
-            from_=tw_from_number,
-            body=text_body
-        )
+        tw_client.messages.create(to=tw_to_number, from_=tw_from_number, body=text_body)
 
     def send_cleaning_reminder_sms(
         self,
         tw_client: Client,
         tw_from_number: str,
         tw_to_number: str,
-        spreadsheet_bitly_url: str
+        spreadsheet_bitly_url: str,
     ):
 
         cleaning_date = self.cleaning_date.strftime("%m/%d/%Y")
 
-        if self.listing_type == 'airbnb':
+        if self.listing_type == "airbnb":
             # next_check_in_date
             if self.next_check_in_date is not None:
-                next_check_in_date = self.next_check_in_date.strftime(
-                    "%m/%d/%Y"
-                )
+                next_check_in_date = self.next_check_in_date.strftime("%m/%d/%Y")
             else:
-                next_check_in_date = 'na'
+                next_check_in_date = "na"
 
             # guests_qty
             if self.next_guests_qty:
                 next_guests_qty = str(self.next_guests_qty)
             else:
-                next_guests_qty = 'na'
+                next_guests_qty = "na"
 
             # beds_qty
             if self.next_beds_qty:
                 next_beds_qty = str(self.next_beds_qty)
             else:
-                next_beds_qty = 'na'
+                next_beds_qty = "na"
 
             # send twilio text sms with cleaning info
             text_body = f"""
@@ -622,9 +590,7 @@ Cleaning Schedule: {spreadsheet_bitly_url}
 """
 
             tw_client.messages.create(
-                to=tw_to_number,
-                from_=tw_from_number,
-                body=text_body
+                to=tw_to_number, from_=tw_from_number, body=text_body
             )
 
         elif self.listing_type == "home":
@@ -636,61 +602,56 @@ Cleaning Schedule (Old Version): https://bit.ly/4428USu
 """
 
             tw_client.messages.create(
-                to=tw_to_number,
-                from_=tw_from_number,
-                body=text_body
+                to=tw_to_number, from_=tw_from_number, body=text_body
             )
 
     def new_pay_reminder_task(self, td_api, td_project_id):
         if self.cleaning_fee:
             cleaning_fee = str(self.cleaning_fee)
         else:
-            cleaning_fee = 'na'
+            cleaning_fee = "na"
 
         td_api.add_task(
             project_id=td_project_id,
             content=f"pay cleaners {cleaning_fee} for {self.listing_name}",
-            due_string="tomorrow 9am"
+            due_string="tomorrow 9am",
         )
 
     def new_check_airbnb_task(self, td_api, td_project_id):
-        if self.listing_type != 'airbnb':
+        if self.listing_type != "airbnb":
             return
 
         td_api.add_task(
             project_id=td_project_id,
             content=f"check airbnb {self.listing_name}",
-            due_string="tomorrow 9am"
+            due_string="tomorrow 9am",
         )
 
     def new_airbnb_parking_pass_task(self, td_api, td_project_id):
-        if self.listing_type != 'airbnb':
+        if self.listing_type != "airbnb":
             return
 
         if self.check_in_date:
             check_in_date = self.check_in_date.strftime("%m/%d/%Y")
         else:
-            check_in_date = 'na'
+            check_in_date = "na"
 
         if self.cleaning_date:
             cleaning_date = self.cleaning_date.strftime("%m/%d/%Y")
         else:
-            cleaning_date = 'na'
+            cleaning_date = "na"
 
-        guest_name = getattr(self, "guest_name", 'na')
+        guest_name = getattr(self, "guest_name", "na")
 
-        car_make = getattr(self, "car_make", 'na')
+        car_make = getattr(self, "car_make", "na")
 
-        car_model = getattr(self, "car_model", 'na')
+        car_model = getattr(self, "car_model", "na")
 
-        car_color = getattr(self, "car_color", 'na')
+        car_color = getattr(self, "car_color", "na")
 
-        car_license_number = getattr(
-            self, "car_license_number", 'na'
-        )
+        car_license_number = getattr(self, "car_license_number", "na")
 
-        car_license_state = getattr(
-            self, "car_license_state", 'na')
+        car_license_state = getattr(self, "car_license_state", "na")
 
         td_api.add_task(
             project_id=td_project_id,
@@ -703,5 +664,5 @@ Car License Number: {car_license_number}
 Car License State: {car_license_state}
 Parking Duration: {check_in_date} to {cleaning_date}
 """,
-            due_string="today 2pm"
+            due_string="today 2pm",
         )
