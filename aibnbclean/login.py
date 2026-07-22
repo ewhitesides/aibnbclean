@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from .AirbnbBrowser import AirbnbBrowser
+from AirbnbBrowser import AirbnbBrowser
 
 
 def login() -> None:

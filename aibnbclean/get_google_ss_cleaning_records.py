@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from typing import Dict, List
-from .CleaningRecord import CleaningRecord
+from CleaningRecord import CleaningRecord
 
 
 def get_google_ss_cleaning_records(

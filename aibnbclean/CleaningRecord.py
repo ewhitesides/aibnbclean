@@ -9,7 +9,7 @@ from typing import Optional, Dict, List
 from google import genai
 from twilio.rest import Client
 from playwright.sync_api import Page
-from .GoogleAiResponse import GoogleAiResponse
+from GoogleAiResponse import GoogleAiResponse
 
 
 class CleaningRecord:
