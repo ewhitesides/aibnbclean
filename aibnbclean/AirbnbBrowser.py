@@ -42,7 +42,7 @@ class AirbnbBrowser:
     def is_logged_in(self) -> bool:
         page = self.get_new_page()
         page.goto("https://www.airbnb.com/hosting")
-        logged_in = page.url == "https://www.airbnb.com/hosting"
+        logged_in = page.url.startswith("https://www.airbnb.com/hosting")
         page.close()  # Cleanup the specific page/context
         return logged_in
 
