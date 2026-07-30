@@ -139,9 +139,15 @@ aibnbclean_process
 
 ## run daily using cron
 
-the following example runs at 1:30pm daily
+The following example runs at 1:30pm daily. Because cron runs in a minimal shell environment, you must make your environment variables (like `AIBNBCLEAN_CONFIG_DIR`) available to the process.
+
+Open your crontab (`crontab -e`) and declare the variables at the top of the file:
 
 ```cron
+AIBNBCLEAN_CONFIG_DIR="/home/airbnb/aibnbclean"
+AIBNBCLEAN_HEADLESS="1"
+AIBNBCLEAN_GEMINI_MODEL="gemini-flash-latest"
+
 30 13 * * * date > /tmp/aibnbclean.log
-30 13 * * * cd $HOME/aibnbclean && $HOME/.local/bin/aibnbclean_process >> /tmp/aibnbclean.log 2>&1
+30 13 * * * $HOME/.local/bin/aibnbclean_process >> /tmp/aibnbclean.log 2>&1
 ```
