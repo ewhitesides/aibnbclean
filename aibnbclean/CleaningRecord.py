@@ -355,25 +355,29 @@ class CleaningRecord:
         self.guests_qty = len(guests) + additional_guest_count
 
     def set_cleaning_fee(self, page: Page):
-        if self.reservation_url is None:
-            raise ValueError("reservation_url is required")
+        try:
+            if self.reservation_url is None:
+                raise ValueError("reservation_url is required")
 
-        if page.url != self.reservation_url:
-            page.goto(self.reservation_url)
+            if page.url != self.reservation_url:
+                page.goto(self.reservation_url)
 
-        page.get_by_test_id("hosting-details-payment-info").click()
+            page.get_by_test_id("hosting-details-payment-info").click()
 
-        content = (
-            page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
-        )
-        page.get_by_role("button", name="Close").click()
+            content = (
+                page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
+            )
+            page.get_by_role("button", name="Close").click()
 
-        # content example
-        # 'Cleaning fee\n$140.00'
+            # content example
+            # 'Cleaning fee\n$140.00'
 
-        content_lines = content.split("\n")
-        cleaning_fee_str = content_lines[1].replace("$", "")
-        self.cleaning_fee = int(float(cleaning_fee_str))
+            content_lines = content.split("\n")
+            cleaning_fee_str = content_lines[1].replace("$", "")
+            self.cleaning_fee = int(float(cleaning_fee_str))
+
+        except Exception as e:
+            print(f"set_cleaning_fee on {self.id}: {e}")
 
     def set_message_text(self, page: Page):
         if self.message_url is None:
