@@ -1,7 +1,7 @@
 import os
 import re
 import hashlib
-import random
+import re
 from unicodedata import normalize
 from io import StringIO
 from datetime import datetime, date, timedelta
@@ -313,18 +313,46 @@ class CleaningRecord:
         if page.url != self.reservation_url:
             page.goto(self.reservation_url)
 
-        content = page.get_by_test_id("hosting-details-whos-coming").inner_text()
-
-        # content examples
+        # content examples (if this gets too much more complicated use AI)
         # 1 guest
         # 'Who’s coming\nJane Doe\nLives in Tampa, FL'
         # 2 guests
         # 'Who’s coming\nJohn Doe\nEnjoys basketball\nJane\nEnjoys animals'
+        # 1 main guest and additional unnamed guests
+        # 'Who’s coming\nJohn Doe\nLives in Harrisburg, PA\n+2\n2 adults'
+        # 1 main guest and additional child, infant, pet
+        # 'Who’s coming\nJames McAloney\nEnjoys animals\n+2\n1 adult, 1 pet'
+        # A whole bunch of people
+        #'Who’s coming\nBrandon Von Feldt\nLives in New York, NY\n+4\n1 adult, 1 child, 1 infant, 1 pet\nInfants attend for free'
 
+        content = page.get_by_test_id("hosting-details-whos-coming").inner_text()
+
+        guests = []
+        additional_guest_count = 0
+        i = 0
         content_lines = content.split("\n")
-        guests = content_lines[1::2]  # every odd line is guest name
+        for content_line in content_lines:
+            if not re.search(
+                r"coming|guest|enjoys|lives|\+|adult|child|infant|pet",
+                content_line,
+                re.IGNORECASE,
+            ):
+                guests.append(content_line)
+
+            if re.search(r"\+", content_line):
+                additional_guests = content_lines[i + 1].split(",")
+                for additional_guest in additional_guests:
+                    if re.search(
+                        r"adult|child|infant", additional_guest, re.IGNORECASE
+                    ):
+                        match = re.search(r"(\d+)", additional_guest)
+                        if match:
+                            additional_guest_count += int(match.group(1))
+
+            i += 1
+
         self.guest_name = guests[0]  # just use first guest
-        self.guests_qty = len(guests)
+        self.guests_qty = len(guests) + additional_guest_count
 
     def set_cleaning_fee(self, page: Page):
         if self.reservation_url is None:
