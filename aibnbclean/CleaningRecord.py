@@ -511,7 +511,7 @@ class CleaningRecord:
             self.car_license_state = google_ai_response.car_license_state
 
         except Exception as e:
-            raise Exception(f"update_properties_with_google_ai: {e}")
+            raise Exception(f"update_with_google_ai on id {self.id}: {e}")
 
     def check_in_is_today(self) -> bool:
         # check_in_date should be datetime.datetime
