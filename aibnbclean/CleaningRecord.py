@@ -1,7 +1,7 @@
 import os
 import re
 import hashlib
-import random
+import re
 from unicodedata import normalize
 from io import StringIO
 from datetime import datetime, date, timedelta
@@ -313,39 +313,71 @@ class CleaningRecord:
         if page.url != self.reservation_url:
             page.goto(self.reservation_url)
 
-        content = page.get_by_test_id("hosting-details-whos-coming").inner_text()
-
-        # content examples
+        # content examples (if this gets too much more complicated use AI)
         # 1 guest
         # 'Who’s coming\nJane Doe\nLives in Tampa, FL'
         # 2 guests
         # 'Who’s coming\nJohn Doe\nEnjoys basketball\nJane\nEnjoys animals'
+        # 1 main guest and additional unnamed guests
+        # 'Who’s coming\nJohn Doe\nLives in Harrisburg, PA\n+2\n2 adults'
+        # 1 main guest and additional child, infant, pet
+        # 'Who’s coming\nJames McAloney\nEnjoys animals\n+2\n1 adult, 1 pet'
+        # A whole bunch of people
+        #'Who’s coming\nBrandon Von Feldt\nLives in New York, NY\n+4\n1 adult, 1 child, 1 infant, 1 pet\nInfants attend for free'
 
+        content = page.get_by_test_id("hosting-details-whos-coming").inner_text()
+
+        guests = []
+        additional_guest_count = 0
+        i = 0
         content_lines = content.split("\n")
-        guests = content_lines[1::2]  # every odd line is guest name
+        for content_line in content_lines:
+            if not re.search(
+                r"coming|guest|enjoys|lives|\+|adult|child|infant|pet",
+                content_line,
+                re.IGNORECASE,
+            ):
+                guests.append(content_line)
+
+            if re.search(r"\+", content_line):
+                additional_guests = content_lines[i + 1].split(",")
+                for additional_guest in additional_guests:
+                    if re.search(
+                        r"adult|child|infant", additional_guest, re.IGNORECASE
+                    ):
+                        match = re.search(r"(\d+)", additional_guest)
+                        if match:
+                            additional_guest_count += int(match.group(1))
+
+            i += 1
+
         self.guest_name = guests[0]  # just use first guest
-        self.guests_qty = len(guests)
+        self.guests_qty = len(guests) + additional_guest_count
 
     def set_cleaning_fee(self, page: Page):
-        if self.reservation_url is None:
-            raise ValueError("reservation_url is required")
+        try:
+            if self.reservation_url is None:
+                raise ValueError("reservation_url is required")
 
-        if page.url != self.reservation_url:
-            page.goto(self.reservation_url)
+            if page.url != self.reservation_url:
+                page.goto(self.reservation_url)
 
-        page.get_by_test_id("hosting-details-payment-info").click()
+            page.get_by_test_id("hosting-details-payment-info").click()
 
-        content = (
-            page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
-        )
-        page.get_by_role("button", name="Close").click()
+            content = (
+                page.get_by_label("You earn").get_by_text("Cleaning fee$").inner_text()
+            )
+            page.get_by_role("button", name="Close").click()
 
-        # content example
-        # 'Cleaning fee\n$140.00'
+            # content example
+            # 'Cleaning fee\n$140.00'
 
-        content_lines = content.split("\n")
-        cleaning_fee_str = content_lines[1].replace("$", "")
-        self.cleaning_fee = int(float(cleaning_fee_str))
+            content_lines = content.split("\n")
+            cleaning_fee_str = content_lines[1].replace("$", "")
+            self.cleaning_fee = int(float(cleaning_fee_str))
+
+        except Exception as e:
+            print(f"set_cleaning_fee on {self.id}: {e}")
 
     def set_message_text(self, page: Page):
         if self.message_url is None:
@@ -354,27 +386,20 @@ class CleaningRecord:
         if page.url != self.message_url:
             page.goto(self.message_url)
 
-        buffer = StringIO()
-
         try:
             message_list = page.get_by_test_id("message-list")
 
-            # only get the direct child div elements (not nested ones)
-            divs = message_list.locator("> div").all()
+            message_list.wait_for(state="visible", timeout=10000)
 
-            for div in divs:
-                text = div.inner_text()
-                buffer.write(text)
+            # additional waiting for any additional rendering
+            page.wait_for_timeout(3000)
 
-            tmp = buffer.getvalue()
-            tmp = normalize("NFKD", tmp)
-            tmp = tmp.replace("\n", " ")
+            inner_text = message_list.inner_text()
 
-            self.message_text = tmp
+            self.message_text = normalize("NFKD", inner_text)
 
-        finally:
-            if buffer:
-                buffer.close()
+        except Exception as e:
+            print(f"set_message_text on id {self.id}: {e}")
 
     def update_with_google_ai(
         self, api_key: str, guests: Dict, beds: Dict, pnp_beds: Dict
@@ -384,9 +409,6 @@ class CleaningRecord:
         https://ai.google.dev/gemini-api/docs/structured-output?lang=python
         """
         try:
-            if self.message_text is None:
-                raise Exception("message_text is required")
-
             client = genai.Client(api_key=api_key)
 
             contents = f"""
@@ -397,9 +419,6 @@ class CleaningRecord:
 
                     minimum/default is {guests['min']} and
                     maximum is {guests['max']}
-
-                    the booking indicates {self.guests_qty} guest(s) but this
-                    might be inaccurate and there are actually more guests
 
                 beds_qty
                     return an int to indicate the number of beds required
@@ -452,6 +471,7 @@ class CleaningRecord:
                     return empty string if it cannot be found
 
                 Message_Text
+                {self.guests_qty} guest(s)
                 {self.message_text}
             """
 
@@ -479,7 +499,7 @@ class CleaningRecord:
             self.car_license_state = google_ai_response.car_license_state
 
         except Exception as e:
-            raise Exception(f"update_properties_with_google_ai: {e}")
+            raise Exception(f"update_with_google_ai on id {self.id}: {e}")
 
     def check_in_is_today(self) -> bool:
         # check_in_date should be datetime.datetime
