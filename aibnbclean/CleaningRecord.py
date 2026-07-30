@@ -409,9 +409,6 @@ class CleaningRecord:
         https://ai.google.dev/gemini-api/docs/structured-output?lang=python
         """
         try:
-            if self.message_text is None:
-                raise Exception("message_text is required")
-
             client = genai.Client(api_key=api_key)
 
             contents = f"""
@@ -422,9 +419,6 @@ class CleaningRecord:
 
                     minimum/default is {guests['min']} and
                     maximum is {guests['max']}
-
-                    the booking indicates {self.guests_qty} guest(s) but this
-                    might be inaccurate and there are actually more guests
 
                 beds_qty
                     return an int to indicate the number of beds required
@@ -477,6 +471,7 @@ class CleaningRecord:
                     return empty string if it cannot be found
 
                 Message_Text
+                {self.guests_qty} guest(s)
                 {self.message_text}
             """
 
