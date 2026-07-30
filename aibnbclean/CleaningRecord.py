@@ -386,27 +386,20 @@ class CleaningRecord:
         if page.url != self.message_url:
             page.goto(self.message_url)
 
-        buffer = StringIO()
-
         try:
             message_list = page.get_by_test_id("message-list")
 
-            # only get the direct child div elements (not nested ones)
-            divs = message_list.locator("> div").all()
+            message_list.wait_for(state="visible", timeout=10000)
 
-            for div in divs:
-                text = div.inner_text()
-                buffer.write(text)
+            # additional waiting for any additional rendering
+            page.wait_for_timeout(3000)
 
-            tmp = buffer.getvalue()
-            tmp = normalize("NFKD", tmp)
-            tmp = tmp.replace("\n", " ")
+            inner_text = message_list.inner_text()
 
-            self.message_text = tmp
+            self.message_text = normalize("NFKD", inner_text)
 
-        finally:
-            if buffer:
-                buffer.close()
+        except Exception as e:
+            print(f"set_message_text on id {self.id}: {e}")
 
     def update_with_google_ai(
         self, api_key: str, guests: Dict, beds: Dict, pnp_beds: Dict
